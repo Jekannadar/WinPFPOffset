@@ -21,7 +21,7 @@ MeshKernel::SurfaceMesh ReadObjFile(const std::string &_InputFile) {
     FILE *inputfile = fopen(_InputFile.c_str(), "r");
     char inputs[100];
     while (fscanf(inputfile, "%[^\n]\n", inputs) != EOF) {
-        string line(inputs);
+        std::string line(inputs);
         if (line[0] == '#') {
             continue;
         }
@@ -67,5 +67,5 @@ MeshKernel::SurfaceMesh ReadObjFile(const std::string &_InputFile) {
     fclose(inputfile);
     return mesh;
 }
-shared_ptr <MeshKernel::SurfaceMesh> mesh;
+std::shared_ptr <MeshKernel::SurfaceMesh> mesh;
 #endif //THICKEN2_OBJ_INPUT_H

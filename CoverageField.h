@@ -5,29 +5,29 @@
 #ifndef THICKEN2_COVERAGEFIELD_H
 #define THICKEN2_COVERAGEFIELD_H
 struct CoverageField {
-    vector<K2::Point_3 > bound_face_vertex_exact;
-    vector<K::Point_3 > bound_face_vertex_inexact;
-    vector<vector<int> > bound_face_id;
-    vector<vector<grid> >  bound_face_cross_field_list;
-    vector<vector<K2::Segment_3> > bound_face_cutting_segment;
-    vector<vector<K2::Point_3> > bound_face_cutting_point;
-    vector<bool> bound_face_useful;
+    std::vector<K2::Point_3 > bound_face_vertex_exact;
+    std::vector<K::Point_3 > bound_face_vertex_inexact;
+    std::vector<std::vector<int> > bound_face_id;
+    std::vector<std::vector<grid> >  bound_face_cross_field_list;
+    std::vector<std::vector<K2::Segment_3> > bound_face_cutting_segment;
+    std::vector<std::vector<K2::Point_3> > bound_face_cutting_point;
+    std::vector<bool> bound_face_useful;
 
     K2::Point_3 center;
     std::vector<std::vector<K2::Point_3> > cdt_result;
-    vector<int>cdt_result_cross_field_list_id;
-    vector<bool>cdt_result_cross_field_list_useful;
+    std::vector<int>cdt_result_cross_field_list_id;
+    std::vector<bool>cdt_result_cross_field_list_useful;
 
-    vector<K2::Point_3 > renumber_bound_face_vertex;
-    vector<vector<int> > renumber_bound_face_id;
-    vector<vector<grid> > renumber_bound_face_cross_field_list;
+    std::vector<K2::Point_3 > renumber_bound_face_vertex;
+    std::vector<std::vector<int> > renumber_bound_face_id;
+    std::vector<std::vector<grid> > renumber_bound_face_cross_field_list;
     int field_id;
     void do_cdt(){
-        //            vector<K2::Point_3> sorted_bound_vertex;
-//            vector<K2::Segment_3> cs;
+        //            std::vector<K2::Point_3> sorted_bound_vertex;
+//            std::vector<K2::Segment_3> cs;
 //            set<pair<int,int> >cs_set;
         for(int i=0;i<bound_face_id.size();i++){
-            vector<K2::Point_3> sorted_bound_vertex{bound_face_vertex_exact[bound_face_id[i][0]],
+            std::vector<K2::Point_3> sorted_bound_vertex{bound_face_vertex_exact[bound_face_id[i][0]],
                                                     bound_face_vertex_exact[bound_face_id[i][1]],
                                                     bound_face_vertex_exact[bound_face_id[i][2]]
             };
@@ -38,7 +38,7 @@ struct CoverageField {
                 continue;
             }
 
-            vector<K2::Segment_3> cs;
+            std::vector<K2::Segment_3> cs;
             for(auto j : bound_face_cutting_segment[i]){
                 int cnt = 0;
                 cnt += (j.vertex(0) == bound_face_vertex_exact[bound_face_id[i][0]] );
@@ -95,7 +95,7 @@ struct CoverageField {
             });
             sorted_bound_vertex.resize(std::unique(sorted_bound_vertex.begin(),sorted_bound_vertex.end())-sorted_bound_vertex.begin());
 
-            vector<vector<K2::Point_3> > res = CGAL_CDT_NEW(sorted_bound_vertex,cs,tri);
+            std::vector<std::vector<K2::Point_3> > res = CGAL_CDT_NEW(sorted_bound_vertex,cs,tri);
 
             for(int j=0;j<res.size();j++){
                 cdt_result.push_back(res[j]);
@@ -108,15 +108,15 @@ struct CoverageField {
     }
 
 
-    vector<int>renumber_bound_face_vertex_global_id;
-    vector<int>renumber_bound_face_global_id;
-    vector<bool>renumber_bound_face_useful;
+    std::vector<int>renumber_bound_face_vertex_global_id;
+    std::vector<int>renumber_bound_face_global_id;
+    std::vector<bool>renumber_bound_face_useful;
     std::unordered_map<unsigned long long,int> encode_map;
 
     void renumber(){
         std::vector<K::Point_3> kd_tree_points;
         DSU dsu;
-        map<K2::Point_3,int>mp;
+        std::map<K2::Point_3,int>mp;
 
         for(int i=0;i<cdt_result.size();i++){
             for(int j=0;j<3;j++){
@@ -137,7 +137,7 @@ struct CoverageField {
             int id0 = mp[cdt_result[i][0]];
             int id1 = mp[cdt_result[i][1]];
             int id2 = mp[cdt_result[i][2]];
-            if(set<int>{id0,id1,id2}.size() != 3)continue;
+            if(std::set<int>{id0,id1,id2}.size() != 3)continue;
             renumber_bound_face_id.push_back({id0,id1,id2});
             renumber_bound_face_cross_field_list.push_back(bound_face_cross_field_list[cdt_result_cross_field_list_id[i]]);
             renumber_bound_face_useful.push_back(cdt_result_cross_field_list_useful[i]);
@@ -156,7 +156,7 @@ struct CoverageField {
             K2::Ray_3 ray(tri_center,iter->supporting_plane().orthogonal_vector());
             std::list< Tree::Intersection_and_primitive_id<K2::Ray_3>::Type> intersections;
             aabb_tree.all_intersections(ray,std::back_inserter(intersections));
-            vector<K2::Point_3> intersection_v;
+            std::vector<K2::Point_3> intersection_v;
             for(auto item : intersections) {
                 if(const K2::Point_3* p = boost::get<K2::Point_3>(&(item.first))){
                     if(*p != tri_center){
@@ -175,7 +175,7 @@ struct CoverageField {
             });
             intersection_v.resize(unique(intersection_v.begin(),intersection_v.end())-intersection_v.begin());
             if(intersection_v.size() % 2 == 0) { // 调整方向向外
-                swap(renumber_bound_face_id[i][1],renumber_bound_face_id[i][2]);
+                std::swap(renumber_bound_face_id[i][1],renumber_bound_face_id[i][2]);
             }
         }
         renumber_bound_face_global_id.resize(renumber_bound_face_id.size());
@@ -202,7 +202,7 @@ struct CoverageField {
             bound_face_vertex_inexact.emplace_back(v.x(),v.y(),v.z());
 
 
-        map<size_t,int> mp;
+        std::map<size_t,int> mp;
         for(int i=0;i<bound_face_vertex_inexact.size();i++){
 
             mp[unique_hash_value(bound_face_vertex_inexact[i])] = i;
@@ -269,5 +269,5 @@ public:
     CGAL::Side_of_triangle_mesh<CGAL::Polyhedron_3<K2>, K2> * inside_ptr;
 };
 
-vector<CoverageField> coverage_field_list;
+std::vector<CoverageField> coverage_field_list;
 #endif //THICKEN2_COVERAGEFIELD_H

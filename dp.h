@@ -6,9 +6,9 @@
 #define THICKEN2_DP_H
 #include <random>
 double avg_edge_limit = 1e-10;
-vector<int> get_sub_state(int state,int face_list_size){
-    vector<int> ret;
-    function<void(int,int,int)> dfs = [&](int state,int pos,int change){
+std::vector<int> get_sub_state(int state,int face_list_size){
+    std::vector<int> ret;
+    std::function<void(int,int,int)> dfs = [&](int state,int pos,int change){
         if(pos == -1 && change) {
             ret.push_back(state);
             return;
@@ -28,22 +28,22 @@ vector<int> get_sub_state(int state,int face_list_size){
     dfs(state,face_list_size,0);
     return ret;
 }
-vector<MeshKernel::iGameVertex> run(MeshKernel::iGameVertexHandle vh,vector<MeshKernel::iGameFaceHandle> neighbor_face_list){
+std::vector<MeshKernel::iGameVertex> run(MeshKernel::iGameVertexHandle vh,std::vector<MeshKernel::iGameFaceHandle> neighbor_face_list){
 //    if(neighbor_face_list.size()>=21) {
 //        cout << "neighbor_face_list.size()=" <<neighbor_face_list.size() <<">21 : this mesh please do remeshing before" << endl;
 //        exit(0);
 //    }
-    vector<double>dp;
-    vector<int>dp_source;
-    vector<MeshKernel::iGameVertex>dp_osqp_answer;
+    std::vector<double>dp;
+    std::vector<int>dp_source;
+    std::vector<MeshKernel::iGameVertex>dp_osqp_answer;
     dp.resize(1<<neighbor_face_list.size());
     dp_source.resize(1<<neighbor_face_list.size());
     dp_osqp_answer.resize(1<<neighbor_face_list.size());
     fill(dp.begin(),dp.end(),-1);
     fill(dp_source.begin(),dp_source.end(),-1);
-    function<double(int)> dfs = [&](int state){
+    std::function<double(int)> dfs = [&](int state){
         if(dp[state] != -1) return dp[state];
-        vector<MeshKernel::iGameFaceHandle> local_neighbor_face_list;
+        std::vector<MeshKernel::iGameFaceHandle> local_neighbor_face_list;
         for(int i=0;i<neighbor_face_list.size();i++){
             if(state & (1<<i))
                 local_neighbor_face_list.push_back(neighbor_face_list[i]);
@@ -66,7 +66,7 @@ vector<MeshKernel::iGameVertex> run(MeshKernel::iGameVertexHandle vh,vector<Mesh
         }
         double minx = 1e100;
         if(neighbor_face_list.size() >=3) {
-            vector<int> sub_state = std::move(get_sub_state(state, neighbor_face_list.size()));
+            std::vector<int> sub_state = std::move(get_sub_state(state, neighbor_face_list.size()));
             int from = -1;
             for (auto next: sub_state) {
                 if (next == 0 || state - next == 0)continue;
@@ -86,8 +86,8 @@ vector<MeshKernel::iGameVertex> run(MeshKernel::iGameVertexHandle vh,vector<Mesh
         return min(minx,self_value);
     };
     dfs((1<<neighbor_face_list.size())-1);
-    queue<int>q;
-    vector<MeshKernel::iGameVertex>ret;
+    std::queue<int>q;
+    std::vector<MeshKernel::iGameVertex>ret;
 
     q.push((1<<neighbor_face_list.size())-1);
     while(!q.empty()){
@@ -108,15 +108,15 @@ vector<MeshKernel::iGameVertex> run(MeshKernel::iGameVertexHandle vh,vector<Mesh
 std::mt19937 mt;
 
 
-vector<MeshKernel::iGameVertex> solve_by_dp(MeshKernel::iGameVertexHandle vh,vector<MeshKernel::iGameFaceHandle> neighbor_face_list){
-    vector<MeshKernel::iGameFaceHandle> neighbor_face_list_tmp = neighbor_face_list;
+std::vector<MeshKernel::iGameVertex> solve_by_dp(MeshKernel::iGameVertexHandle vh,std::vector<MeshKernel::iGameFaceHandle> neighbor_face_list){
+    std::vector<MeshKernel::iGameFaceHandle> neighbor_face_list_tmp = neighbor_face_list;
     //cout <<"determins " <<neighbor_face_list.size() <<":"<<avg_edge_limit / 1000<< endl;
     neighbor_face_list.clear();
     for(int i=0;i<neighbor_face_list_tmp.size();i++){
         //cout <<"************************************" << endl;
-        MeshKernel::iGameFaceHandle f = neighbor_face_list[i];
+        MeshKernel::iGameFaceHandle f = neighbor_face_list_tmp[i];
         bool flag = true;
-        vector<double>len_list;
+        std::vector<double>len_list;
         for(int j=0;j<3;j++) {
             len_list.push_back((mesh->fast_iGameVertex[mesh->fast_iGameFace[f].vh(j)]
                                 - mesh->fast_iGameVertex[mesh->fast_iGameFace[f].vh((j+1)%3)]).norm());
@@ -151,9 +151,9 @@ vector<MeshKernel::iGameVertex> solve_by_dp(MeshKernel::iGameVertexHandle vh,vec
 ////                                iGameVertex_to_Point_K2(mesh->fast_iGameVertex[mesh->fast_iGameFace[f].vh(1)]),
 ////                                iGameVertex_to_Point_K2(mesh->fast_iGameVertex[mesh->fast_iGameFace[f].vh(2)])
 ////                               );
-////            double xx = CGAL::to_double(tri.supporting_plane().orthogonal_vector().x());
-////            double yy = CGAL::to_double(tri.supporting_plane().orthogonal_vector().y());
-////            double zz = CGAL::to_double(tri.supporting_plane().orthogonal_vector().z());
+////            double xx = CGAL::to_double(tri.supporting_plane().orthogonal_std::vector().x());
+////            double yy = CGAL::to_double(tri.supporting_plane().orthogonal_std::vector().y());
+////            double zz = CGAL::to_double(tri.supporting_plane().orthogonal_std::vector().z());
 ////            cout << xx <<" "<< yy <<" "<< zz << endl;
 //            neighbor_face_list.push_back(f);
 //        }
@@ -175,23 +175,23 @@ vector<MeshKernel::iGameVertex> solve_by_dp(MeshKernel::iGameVertexHandle vh,vec
         //if(each > 16)exit(0);
         //cout <<"each "<< each<< endl;
         double ans = 1e100;
-        vector<MeshKernel::iGameVertex> ret;
+        std::vector<MeshKernel::iGameVertex> ret;
         for(int times=0;times<10;times++){
-            vector<MeshKernel::iGameVertex> now;
+            std::vector<MeshKernel::iGameVertex> now;
             std::shuffle(neighbor_face_list.begin(), neighbor_face_list.end(), mt);
-            vector<MeshKernel::iGameFaceHandle> que;
+            std::vector<MeshKernel::iGameFaceHandle> que;
             for(int i=0;i<neighbor_face_list.size();i++){
                 //cout<<"times: " << times <<" i:"<< i << endl;
                 que.push_back(neighbor_face_list[i]);
                 if(que.size() == each){
-                    vector<MeshKernel::iGameVertex> tmp = run(vh, que);
+                    std::vector<MeshKernel::iGameVertex> tmp = run(vh, que);
                     for(auto item : tmp) now.push_back(item);
                     que.clear();
                 }
             }
             if(que.size()){
                 //cout << "last run:"<<que.size() << endl;
-                vector<MeshKernel::iGameVertex> tmp = run(vh, que);
+                std::vector<MeshKernel::iGameVertex> tmp = run(vh, que);
                 //cout << "last run end:"<<tmp.size() << endl;
                 for(auto item : tmp) now.push_back(item);
                 que.clear();

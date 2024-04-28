@@ -16,7 +16,7 @@ struct Point_K_equal{
 };
 
 const int hash_factor = 5000011;
-vector<unordered_map<K::Point_3,unsigned long long> >point_hash_vector(hash_factor);
+std::vector<std::unordered_map<K::Point_3,unsigned long long> >point_hash_vector(hash_factor);
 unsigned long long unique_hash_value(K::Point_3 p){
     unsigned long long value = CGAL::hash_value(p)&((1LL<<32)-1);
 //    value += *(unsigned long long *)(&p.x());
@@ -25,7 +25,7 @@ unsigned long long unique_hash_value(K::Point_3 p){
 //    return value;
 
  //   cout<<"query" << value<<" "<<value%hash_factor<< endl;
-    unordered_map<K::Point_3,unsigned long long>::iterator it = point_hash_vector[value%hash_factor].find(p);
+    std::unordered_map<K::Point_3,unsigned long long>::iterator it = point_hash_vector[value%hash_factor].find(p);
     if(it == point_hash_vector[value%hash_factor].end()){
         //cout <<"meeting"<<endl;
         unsigned long long conflict_size = point_hash_vector[value%hash_factor].size()+1;

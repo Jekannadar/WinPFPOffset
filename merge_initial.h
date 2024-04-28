@@ -5,7 +5,7 @@
 #ifndef THICKEN2_MERGE_INITIAL_H
 #define THICKEN2_MERGE_INITIAL_H
 //
-void subdivide(vector<int>v,std::vector<K::Point_3>& kd_tree_points_new,int cnt){
+void subdivide(std::vector<int>v,std::vector<K::Point_3>& kd_tree_points_new,int cnt){
     if(v.size() == 0)return;
     //float delta_x = -1;
     double move_dist_avg = 0;
@@ -31,7 +31,7 @@ void subdivide(vector<int>v,std::vector<K::Point_3>& kd_tree_points_new,int cnt)
     }
     double dist = sqrt((max_x-min_x)*(max_x-min_x) + (max_y-min_y)*(max_y-min_y) + (max_z-min_z)*(max_z-min_z));
     if(dist > move_dist_avg  && cnt < 4){
-        vector<vector<int> >subdivide_next(8);
+        std::vector<std::vector<int> >subdivide_next(8);
         for(int i=0;i<=1;i++){
             for(int j=0;j<=1;j++){
                 for(int k=0;k<=1;k++){
@@ -70,10 +70,10 @@ void merge_initial(){
     std::vector<K::Point_3> kd_tree_points;
     std::vector<K::Point_3> kd_tree_points_new;
 //    std::vector<K::Vector_3> kd_tree_vec;
-    std::vector<vector<int> > kd_tree_list;
-    std::vector<pair<int,int> > kd_tree_which_source;
+    std::vector<std::vector<int> > kd_tree_list;
+    std::vector<std::pair<int,int> > kd_tree_which_source;
     std::vector<double>kd_tree_points_move_limit;
-    unordered_map<unsigned long long, int > mp;
+    std::unordered_map<unsigned long long, int > mp;
     for(int i=0;i<mesh->VertexSize();i++){
         for(int j=0;j<field_move_vertices[i].size();j++){
             mp[unique_hash_value(field_move_vertices[i][j])] = kd_tree_which_source.size();
@@ -94,7 +94,7 @@ void merge_initial(){
         tree.search(std::back_inserter(result), fs);
         for (const Point& p : result) {
             int source_id = mp[unique_hash_value(p)];
-            pair<int,int>which = kd_tree_which_source[source_id];
+            std::pair<int,int>which = kd_tree_which_source[source_id];
             if(sqrt(CGAL::squared_distance(p,kd_tree_points[i])) < merge_limit[which.first]){
                 auto a = unique_hash_value(kd_tree_points[i]);
                 auto b = unique_hash_value(p);
@@ -110,7 +110,7 @@ void merge_initial(){
         unsigned long long hash_value = unique_hash_value(kd_tree_points[i]);
         //cout << "differ equal: "<<(hash_value != dsu.find_root(hash_value)) << endl;
         int source_id = mp[dsu.find_root(hash_value)];
-        pair<int,int>which = kd_tree_which_source[source_id];
+        std::pair<int,int>which = kd_tree_which_source[source_id];
 //        if(hash_value != dsu.find_root(hash_value)){
 //            fprintf(file16_6,"v %lf %lf %lf\n",mesh->fast_iGameVertex[which.first].x(),
 //                    mesh->fast_iGameVertex[which.first].y(),
@@ -129,7 +129,7 @@ void merge_initial(){
         // cout << i<<" "<<CGAL::hash_value(kd_tree_points[i]) <<" "<<CGAL::hash_value(kd_tree_points[i])<<" "<<CGAL::hash_value(kd_tree_points[i])<<endl;
         unsigned long long hash_value = unique_hash_value(kd_tree_points[i]);
         int source_id = mp[dsu.find_root(hash_value)];
-        pair<int,int>which = kd_tree_which_source[i];
+        std::pair<int,int>which = kd_tree_which_source[i];
 //        cout <<i<<"point"<< kd_tree_points[i].x() <<" "<< kd_tree_points[i].y()<<" "<< kd_tree_points[i].z()<<" "<<i<<"hashvalue"<<hash_value <<"root"<<dsu.find_root(hash_value) <<" "<<source_id <<" "<<which.first <<" "<< which.second << endl;
         field_move_vertices[which.first][which.second] =  kd_tree_points_new[source_id] ;
     }

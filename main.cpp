@@ -17,7 +17,6 @@
 #include "Eigen/Core"
 #include "Eigen/Sparse"
 #include "OsqpEigen/OsqpEigen.h"
-#include <vector>
 #include <fstream>
 #include <limits>
 #include <unordered_set>
@@ -41,7 +40,6 @@
 #include <CGAL/Delaunay_triangulation_3.h>
 #include <CGAL/Kd_tree.h>
 #include <CGAL/Fuzzy_sphere.h>
-#include <vector>
 #include <iostream>
 #include <CGAL/Search_traits_3.h>
 #include <atomic>
@@ -59,19 +57,20 @@
 #include "single_coverage_ray_detect.h"
 #include "flag_parser.h"
 #include "merge_initial.h"
-
-using namespace std;
+#undef small
+//using namespace std;
+//const int __gmp_bits_per_limb = 64;
 int main(int argc, char* argv[]) {
 
-    google::ParseCommandLineFlags(&argc, &argv, true);
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
     flag_parser();
 
-    cout <<"CGAL_RELEASE_DATE:" << CGAL_RELEASE_DATE << endl;
-    mesh = make_shared<MeshKernel::SurfaceMesh>(ReadObjFile(input_filename)); grid_len = 0.1;
+    std::cout <<"CGAL_RELEASE_DATE:" << CGAL_RELEASE_DATE << std::endl;
+    mesh = std::make_shared<MeshKernel::SurfaceMesh>(ReadObjFile(input_filename)); grid_len = 0.1;
     input_filename = input_filename.substr(0,input_filename.size()-4);
-    input_filename+= string("_") + (running_mode==1?"offset_outward":"offset_inward");
+    input_filename+= std::string("_") + (running_mode==1?"offset_outward":"offset_inward");
     FILE *file11 = fopen( (input_filename + "_grid.obj").c_str(), "w");
-    FILE *file6 = fopen( (input_filename + "_tmp.obj").c_str(), "w");
+    FILE *file6 = fopen( (input_filename + "_result.obj").c_str(), "w");
     FILE *file14 = fopen( (input_filename + "_coveragefield.obj").c_str(), "w");
 
 
@@ -79,7 +78,7 @@ int main(int argc, char* argv[]) {
     mesh->initBBox();
    // mesh->build_fast();
     auto start_clock = std::chrono::high_resolution_clock::now();
-    cout <<"mesh->build_fast() succ" << endl;
+    std::cout <<"mesh->build_fast() succ" << std::endl;
     //double default_move_dist = 0.05;
     double x_len = (mesh->BBoxMax - mesh->BBoxMin).x();
     double y_len = (mesh->BBoxMax - mesh->BBoxMin).y();
@@ -87,11 +86,11 @@ int main(int argc, char* argv[]) {
     {
         double sum = 0;
         for(int i=0;i<mesh->FaceSize();i++){
-            double minx = *set<double>{(mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(0)] - mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(1)]).norm(),
+            double minx = *std::set<double>{(mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(0)] - mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(1)]).norm(),
                                        (mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(1)] - mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(2)]).norm(),
                                        (mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(2)] - mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(0)]).norm()
             }.begin();
-            double maxx = *set<double>{(mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(0)] - mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(1)]).norm(),
+            double maxx = *std::set<double>{(mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(0)] - mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(1)]).norm(),
                                        (mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(1)] - mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(2)]).norm(),
                                        (mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(2)] - mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(0)]).norm()
             }.rbegin();
@@ -102,23 +101,23 @@ int main(int argc, char* argv[]) {
         avg_edge_limit = sum/mesh->FaceSize();
         if(default_move <= 0) {
             default_move = sum/mesh->FaceSize()/2;
-            cout <<"default_move_dist:" <<default_move << endl;
+            std::cout <<"default_move_dist:" <<default_move << std::endl;
             //exit(0);
         }
         double min_len = min(min(x_len,y_len),z_len);
         double rate = x_len/min_len*y_len/min_len*z_len/min_len;
 
-        cout <<"??"<<(4*thread_num) <<" "<<rate << endl; // minlen rate 格了 4* thread_num 格子
+        std::cout <<"??"<<(4*thread_num) <<" "<<rate << std::endl; // minlen rate 格了 4* thread_num 格子
         double need_div = max(cbrt((4*thread_num)/rate),1.0);
         grid_len = min_len / need_div;//(mesh->BBoxMax - mesh->BBoxMin).norm()/ thread_num * 2;
-        cout << "grid_len "<< grid_len<<endl;
+        std::cout << "grid_len "<< grid_len<<std::endl;
 
     }
 //    FILE * file50 = fopen((input_filename.substr(0,input_filename.size()-4) + "_offset.obj2").c_str(),"w");
 //
 //    fprintf(file50,"#download from quad mesh, add offset distance of every by PFPOffset.\n");
 //    for (int i = 0; i < mesh->VertexSize(); i++) {
-//        //cout << mesh->fast_iGameVertex[i].x() <<" "<< mesh->fast_iGameVertex[i].y() <<" "<<  mesh->fast_iGameVertex[i].z()<<endl;
+//        //std::cout << mesh->fast_iGameVertex[i].x() <<" "<< mesh->fast_iGameVertex[i].y() <<" "<<  mesh->fast_iGameVertex[i].z()<<std::endl;
 //        fprintf(file50,"v %.7lf %.7lf %.7lf\n",mesh->fast_iGameVertex[i].x(),
 //                mesh->fast_iGameVertex[i].y(),
 //                mesh->fast_iGameVertex[i].z());
@@ -131,7 +130,11 @@ int main(int argc, char* argv[]) {
         if(mesh->fast_iGameFace[MeshKernel::iGameFaceHandle(i)].move_dist <= 0){// deal Illegal input
             mesh->fast_iGameFace[MeshKernel::iGameFaceHandle(i)].move_dist = default_move;
         }
-        cout <<"facei "<<  mesh->fast_iGameFace[MeshKernel::iGameFaceHandle(i)].move_dist<<" "<<mesh->FastNeighborFhOfFace_[i].size()<< endl;
+        if(i%1000 == 0){
+            std::cout << "Imported " << i << "/" <<  mesh->FaceSize() << std::endl;
+        }
+        //Printing this much is really expensive
+        //std::cout <<"facei "<<  mesh->fast_iGameFace[MeshKernel::iGameFaceHandle(i)].move_dist<<" "<<mesh->FastNeighborFhOfFace_[i].size()<< std::endl;
         //myeps = min(myeps,mesh->fast_iGameFace[MeshKernel::iGameFaceHandle(i)].move_dist);
 //        fprintf(file50,"f %d %d %d %.7lf\n",mesh->fast_iGameFace[MeshKernel::iGameFaceHandle(i)].vh(0)+1,
 //                mesh->fast_iGameFace[MeshKernel::iGameFaceHandle(i)].vh(1)+1,
@@ -153,26 +156,26 @@ int main(int argc, char* argv[]) {
     field_move_face.resize(mesh->FaceSize());
     field_move_K2_triangle.resize(mesh->FaceSize());
 
-    cout <<"st do_quadratic_error_metric" << endl;
+    std::cout <<"st do_quadratic_error_metric" << std::endl;
 
 
     merge_limit.resize(mesh->VertexSize());
     std::vector <std::shared_ptr<std::thread> > dp_thread_pool(thread_num);
     for(int i=0;i<thread_num;i++) {
-        dp_thread_pool[i] = make_shared<std::thread>([&](int now_id) {
+        dp_thread_pool[i] = std::make_shared<std::thread>([&](int now_id) {
             for (int i = 0; i < mesh->VertexSize(); i++) {
             //for (int i = 524; i < 525; i++) {
                 if (i % thread_num != now_id)continue;
                 if (i % 20 == 0)
-                    cout << "dp: " << i << "/"<<mesh->VertexSize()<< endl;
-                vector<MeshKernel::iGameFaceHandle> neighbor_list;
+                    std::cout << "dp: " << i << "/"<<mesh->VertexSize()<< std::endl;
+                std::vector<MeshKernel::iGameFaceHandle> neighbor_list;
                 double min_move_dist = 1e30;
                 for(auto j : mesh->FastNeighborFhOfVertex_[i]){
                     neighbor_list.push_back(j);
                 }
-                // cout <<i<<"//"<<mesh->VertexSize()<<" dp_result.size(): " <<"start" << endl;
-                vector<MeshKernel::iGameVertex> dp_result = solve_by_dp(MeshKernel::iGameVertexHandle(i),neighbor_list);
-                //cout <<i<<"//"<<mesh->VertexSize()<<" dp_result.size(): " <<dp_result.size() << endl;
+                // std::cout <<i<<"//"<<mesh->VertexSize()<<" dp_result.size(): " <<"start" << std::endl;
+                std::vector<MeshKernel::iGameVertex> dp_result = solve_by_dp(MeshKernel::iGameVertexHandle(i),neighbor_list);
+                //std::cout <<i<<"//"<<mesh->VertexSize()<<" dp_result.size(): " <<dp_result.size() << std::endl;
                 for(auto t: dp_result){
                     field_move_vertices[i].emplace_back(t.x(),t.y(),t.z());
                     min_move_dist = min(min_move_dist,mesh->fast_iGameVertex[i].dist(t));
@@ -214,13 +217,13 @@ int main(int argc, char* argv[]) {
 
     std::vector <std::shared_ptr<std::thread> > one_ring_select_thread_pool(thread_num);
     for(int i=0;i<thread_num;i++) {
-        one_ring_select_thread_pool[i] = make_shared<std::thread>([&](int now_id) {
+        one_ring_select_thread_pool[i] = std::make_shared<std::thread>([&](int now_id) {
             for(int i=0;i<mesh->FaceSize();i++) {
                 if (i % thread_num != now_id)continue;
                 if(i%500==0)
-                    cout << "one_ring_select_thread_pool "<< i << endl;
+                    std::cout << "one_ring_select_thread_pool "<< i << std::endl;
 
-                set<int>neighbor_field;
+                std::set<int>neighbor_field;
 
                 for (auto neighbor_id: mesh->FastNeighborFhOfFace_[i]) {
                     if(neighbor_id == i)continue;
@@ -228,7 +231,7 @@ int main(int argc, char* argv[]) {
                 }
 
 
-                vector<K2::Triangle_3>neighbor_face;
+                std::vector<K2::Triangle_3>neighbor_face;
                 for(auto neighbor_id: neighbor_field){
                     for (int k = 0; k < coverage_field_list[neighbor_id].bound_face_id.size(); k++) {
                         K2::Triangle_3 tri_this(coverage_field_list[neighbor_id].bound_face_vertex_exact[coverage_field_list[neighbor_id].bound_face_id[k][0]],
@@ -253,7 +256,7 @@ int main(int argc, char* argv[]) {
                         K2::Segment_3 e1(tri_this.vertex(1), tri_this.vertex(2));
                         K2::Segment_3 e2(tri_this.vertex(2), tri_this.vertex(0));
 
-                        vector<K2::Segment_3> vs_tmp;
+                        std::vector<K2::Segment_3> vs_tmp;
                         for (auto other: neighbor_face) { //Point_3, or Segment_3, or Triangle_3, or std::vector < Point_3 >
                             CGAL::cpp11::result_of<K2::Intersect_3(K2::Triangle_3, K2::Triangle_3)>::type
                                     res_tt = intersection(tri_this, other);
@@ -268,21 +271,21 @@ int main(int argc, char* argv[]) {
                                     sort_by_polar_order(*vs, tri_this.supporting_plane().orthogonal_vector());
                                     for (int k = 0; k < vs->size(); k++) {
                                         vs_tmp.emplace_back(vs->operator[](k), vs->operator[]((k + 1) % vs->size()));
-                                        // cerr << "run iiiiiiiiiiiiiiit" << endl;
+                                        // cerr << "run iiiiiiiiiiiiiiit" << std::endl;
                                     }
                                 }
                             }
                         }
-                        vector<K2::Segment_3> vs;
+                        std::vector<K2::Segment_3> vs;
                         for (auto se: vs_tmp) {
                             if (!segment_in_line(se, e0) && !segment_in_line(se, e1) && !segment_in_line(se, e2)) {
                                 vs.push_back(se);
                             }
                         }
-                        vector<vector<K2::Point_3> > res = CGAL_CDT_NEW({coverage_field_list[i].bound_face_vertex_exact[coverage_field_list[i].bound_face_id[j][0]],
+                        std::vector<std::vector<K2::Point_3> > res = CGAL_CDT_NEW({coverage_field_list[i].bound_face_vertex_exact[coverage_field_list[i].bound_face_id[j][0]],
                                                                          coverage_field_list[i].bound_face_vertex_exact[coverage_field_list[i].bound_face_id[j][1]],
                                                                          coverage_field_list[i].bound_face_vertex_exact[coverage_field_list[i].bound_face_id[j][2]]}, vs, tri_this);
-                        //cout << res.size() <<endl;
+                        //std::cout << res.size() <<std::endl;
                         for (auto each_tri: res) {
                             bool patch_flag = false;
                             K2::Point_3 center = CGAL::centroid(K2::Triangle_3(each_tri[0], each_tri[1], each_tri[2]));
@@ -302,7 +305,7 @@ int main(int argc, char* argv[]) {
                             }
                         }
                         coverage_field_list[i].bound_face_useful[j]=flag;
-                        //cout <<i<<" "<<j <<" "<< (flag?"yes":"no") << endl;
+                        //std::cout <<i<<" "<<j <<" "<< (flag?"yes":"no") << std::endl;
                     }
                     else{
                         coverage_field_list[i].bound_face_useful[j]=false;
@@ -321,9 +324,9 @@ int main(int argc, char* argv[]) {
         each_grid_face_list.push_back({(size_t)each_container_face[2],(size_t)each_container_face[3],(size_t)each_container_face[0]});
     }
 
-    cout <<"build end "<< endl;
+    std::cout <<"build end "<< std::endl;
 
-    cgal_polygon = make_shared<CGALPolygon>(mesh);
+    cgal_polygon = std::make_shared<CGALPolygon>(mesh);
 
     std::list < K2::Triangle_3> triangles;
 
@@ -342,16 +345,16 @@ int main(int argc, char* argv[]) {
 
     printf("GL %lf\n", grid_len);
 
-    unordered_map <grid, GridVertex, grid_hash, grid_equal> frame_grid_mp;
+    std::unordered_map <grid, GridVertex, grid_hash, grid_equal> frame_grid_mp;
 
-    vector <vector<int>> bfs_dir = {{0,  0,  1},
+    std::vector <std::vector<int>> bfs_dir = {{0,  0,  1},
                                     {0,  1,  0},
                                     {1,  0,  0},
                                     {0,  0,  -1},
                                     {0,  -1, 0},
                                     {-1, 0,  0}};
-    std::function < vector<grid>(grid) > get_neighbor = [&](grid g) {
-        vector <grid> ret;
+    std::function < std::vector<grid>(grid) > get_neighbor = [&](grid g) {
+        std::vector <grid> ret;
         for (auto i: bfs_dir) {
             int xx, yy, zz;
             xx = g.x + i[0];
@@ -364,16 +367,16 @@ int main(int argc, char* argv[]) {
     };
     int fsize = mesh->FaceSize();
 
-    cout <<"bfs start \n" << endl;
+    std::cout <<"bfs start \n" << std::endl;
     std::mutex bfs_mutex;
     std::vector <std::shared_ptr<std::thread> > bfs_thread_pool(thread_num);
     for(int i=0;i<thread_num;i++) {
-        bfs_thread_pool[i] = make_shared<std::thread>([&](int now_id) {
+        bfs_thread_pool[i] = std::make_shared<std::thread>([&](int now_id) {
             for (int face_id = 0; face_id < fsize; face_id++) {
                 if(face_id % thread_num !=  now_id)continue;
                 if (face_id % 1000 == 0)
                     printf("%d/%d\n", face_id, fsize);
-                auto fh = make_pair(MeshKernel::iGameFaceHandle(face_id),
+                auto fh = std::make_pair(MeshKernel::iGameFaceHandle(face_id),
                                     mesh->fast_iGameFace[face_id]);
                 MeshKernel::iGameVertex center = (mesh->fast_iGameVertex[fh.second.vh(0)] +
                                                   mesh->fast_iGameVertex[fh.second.vh(1)] +
@@ -387,16 +390,16 @@ int main(int argc, char* argv[]) {
                 }
 
                 grid now = vertex_to_grid(center);
-                vector <MeshKernel::iGameFaceHandle> face_and_neighbor;
+                std::vector <MeshKernel::iGameFaceHandle> face_and_neighbor;
                 face_and_neighbor.push_back(fh.first);
                 for (auto i: mesh->FastNeighborFhOfFace_[fh.first]) {
                     face_and_neighbor.push_back(i);
                 }
 
 
-                queue <grid> q;
-                unordered_set <grid,grid_hash,grid_equal> is_visit;
-                vector <grid> center_neighbor = get_neighbor(now);
+                std::queue <grid> q;
+                std::unordered_set <grid,grid_hash,grid_equal> is_visit;
+                std::vector <grid> center_neighbor = get_neighbor(now);
                 for (auto bfs_start_node: center_neighbor) {
                     is_visit.insert(bfs_start_node);
                     q.push(bfs_start_node);
@@ -404,16 +407,16 @@ int main(int argc, char* argv[]) {
                 while (!q.empty()) {
                     now = q.front();
                     q.pop();
-                    //cout << now.x <<" "<< now.y <<""
+                    //std::cout << now.x <<" "<< now.y <<""
                     std::unique_lock<std::mutex>lock1(bfs_mutex,std::defer_lock);
                     lock1.lock();
                     auto iter = frame_grid_mp.find(now);
                     if (iter == frame_grid_mp.end()) {
-                        iter = frame_grid_mp.insert(make_pair(now, GridVertex())).first;
+                        iter = frame_grid_mp.insert(std::make_pair(now, GridVertex())).first;
                     }
                     iter->second.field_list.push_back(fh.first);
                     lock1.unlock();
-                    vector <grid> neighbor = get_neighbor(now);
+                    std::vector <grid> neighbor = get_neighbor(now);
                     for (auto j: neighbor) {
                         if (!is_visit.count(j)) {
                             double dist = cgal_vertex_triangle_dist(fh.second, getGridVertex(j, 0), mesh);
@@ -431,7 +434,7 @@ int main(int argc, char* argv[]) {
 
     for(int i=0;i<thread_num;i++)
         bfs_thread_pool[i]->join();
-    cout <<"bfs end \n" << endl;
+    std::cout <<"bfs end \n" << std::endl;
 
     auto frame_grid_mp_bk =  frame_grid_mp;
     for(auto i : frame_grid_mp_bk) {
@@ -448,7 +451,7 @@ int main(int argc, char* argv[]) {
 
     std::vector <std::shared_ptr<std::thread> > each_grid_thread_pool(thread_num);
     for(int i=0;i<thread_num;i++) { //todo 存在偶发性多线程异常
-        each_grid_thread_pool[i] = make_shared<std::thread>([&](int now_id) {
+        each_grid_thread_pool[i] = std::make_shared<std::thread>([&](int now_id) {
             int each_grid_cnt =-1;
             for (auto each_grid = frame_grid_mp.begin(); each_grid != frame_grid_mp.end(); each_grid++) { // todo 逻辑修改
                 each_grid_cnt++;
@@ -478,6 +481,8 @@ int main(int argc, char* argv[]) {
                 }
                 Tree frame_aabb_tree(frame_faces_list.begin(),frame_faces_list.end());
                 CGAL::Polyhedron_3<K2> frame_poly;
+                PMP::repair_polygon_soup(ps,each_grid_face_list,CGAL::parameters::all_default());
+                PMP::orient_polygon_soup(ps,each_grid_face_list);
                 PMP::polygon_soup_to_polygon_mesh(ps, each_grid_face_list, frame_poly, CGAL::parameters::all_default());
 
                 for(int j = 0; j <  each_grid->second.field_list.size() ; j++){
@@ -492,7 +497,7 @@ int main(int argc, char* argv[]) {
                                                 coverage_field_list[field_id].bound_face_vertex_exact[v1_id],
                                                 coverage_field_list[field_id].bound_face_vertex_exact[v2_id]
                         );
-                        //cout <<"useful: "<< coverage_field_list[field_id].bound_face_useful[k] << endl;
+                        //std::cout <<"useful: "<< coverage_field_list[field_id].bound_face_useful[k] << std::endl;
                         if(!coverage_field_list[field_id].bound_face_useful[k])continue;
                         if(check_triangle_through_grid(small,big,frame_poly,this_tri)){
 
@@ -506,7 +511,7 @@ int main(int argc, char* argv[]) {
                 }
                 Tree this_grid_aabb_tree( each_grid->second.build_aabb_tree_triangle_list.begin(),
                                           each_grid->second.build_aabb_tree_triangle_list.end());
-               // cout <<each_grid_cnt<<":::::::" <<each_grid->second.build_aabb_tree_triangle_list.size()<<endl;
+               // std::cout <<each_grid_cnt<<":::::::" <<each_grid->second.build_aabb_tree_triangle_list.size()<<std::endl;
                 //X: 这里写查询 因为aabb树指针的bug，所以反着做，用每个格子去查询每个面
 
                 for(auto item : each_grid->second.field_face_though_list){
@@ -524,24 +529,24 @@ int main(int argc, char* argv[]) {
 
                         this_grid_aabb_tree.all_intersections(this_tri,std::back_inserter(intersections));
 
-                        unique_lock<mutex> lock(mutex);
+                        std::unique_lock<std::mutex> lock(std::mutex);
                         for(auto item : intersections) { //todo 这里改成批量插入
                             if(const K2::Segment_3 * s = boost::get<K2::Segment_3>(&(item.first))){
 
-                                map<size_t,pair<int,int> >::iterator iter = each_grid->second.face_hash_id_map.find(item.second->id());
+                                std::map<size_t,std::pair<int,int> >::iterator iter = each_grid->second.face_hash_id_map.find(item.second->id());
                                 if(iter->second.first != field_id ) {
                                     coverage_field_list[field_id].bound_face_cutting_segment[bound_face_id].push_back(
                                             *s);
                                 }
                             }
                             else if(const K2::Point_3 * p = boost::get<K2::Point_3>(&(item.first))){
-                                map<size_t,pair<int,int> >::iterator iter = each_grid->second.face_hash_id_map.find(item.second->id());
+                                std::map<size_t,std::pair<int,int> >::iterator iter = each_grid->second.face_hash_id_map.find(item.second->id());
                                 if(iter->second.first != field_id ) {
                                     coverage_field_list[field_id].bound_face_cutting_point[bound_face_id].push_back(*p);
                                 }
                             }
                             else if(const std::vector<K2::Point_3> * v = boost::get<std::vector<K2::Point_3> >(&(item.first)) ){
-                                map<size_t,pair<int,int> >::iterator iter = each_grid->second.face_hash_id_map.find(item.second->id());
+                                std::map<size_t,std::pair<int,int> >::iterator iter = each_grid->second.face_hash_id_map.find(item.second->id());
                                 if(iter->second.first != field_id ){
                                     for(int j=0;j<v->size();j++){
                                         coverage_field_list[field_id].bound_face_cutting_point[bound_face_id].push_back(v->at(j));
@@ -553,7 +558,7 @@ int main(int argc, char* argv[]) {
                     }
                 }
             }
-            cout << "each_grid_cnt end thread num:"<< now_id<<endl;
+            std::cout << "each_grid_cnt end thread num:"<< now_id<<std::endl;
         }, i);
     }
 
@@ -585,11 +590,11 @@ int main(int argc, char* argv[]) {
     std::vector <std::shared_ptr<std::thread> > field_vertex_numbering_thread_pool(thread_num);
     std::atomic<int>global_vertex_id_sum;
     for(int i=0;i<thread_num;i++) {
-        field_vertex_numbering_thread_pool[i] = make_shared<std::thread>([&](int now_id) {
+        field_vertex_numbering_thread_pool[i] = std::make_shared<std::thread>([&](int now_id) {
             for (int field_id = 0; field_id < fsize; field_id++) {
                 if (field_id % thread_num != now_id)continue;
                 if(field_id %(10*thread_num) ==0)
-                    cout << "start do cdt "<< field_id <<"/"<<fsize << endl;
+                    std::cout << "start do cdt "<< field_id <<"/"<<fsize << std::endl;
                 coverage_field_list[field_id].field_id = field_id;
                 coverage_field_list[field_id].do_cdt();
                 coverage_field_list[field_id].renumber();
@@ -633,7 +638,7 @@ int main(int argc, char* argv[]) {
             int tv2 =  coverage_field_list[field_id].renumber_bound_face_vertex_global_id[coverage_field_list[field_id].renumber_bound_face_id[i][2]];
 
             int useful = coverage_field_list[field_id].renumber_bound_face_useful[i];
-            if(set<int>{tv0,tv1,tv2}.size() < 3)continue;
+            if(std::set<int>{tv0,tv1,tv2}.size() < 3)continue;
             for(int j =0 ; j < coverage_field_list[field_id].renumber_bound_face_cross_field_list[i].size();j++){
                 grid cross_grid = coverage_field_list[field_id].renumber_bound_face_cross_field_list[i][j];
                 frame_grid_mp[cross_grid].global_face_list.push_back(global_face_cnt);
@@ -654,15 +659,15 @@ int main(int argc, char* argv[]) {
     //exit(0);
     // 接下去就是求交
 
-    cout << " 接下去时求交"<<endl;//deckel.obj
-    queue<unordered_map <grid, GridVertex, grid_hash, grid_equal>::iterator > que;
+    std::cout << " 接下去时求交"<<std::endl;//deckel.obj
+    std::queue<std::unordered_map <grid, GridVertex, grid_hash, grid_equal>::iterator > que;
     for (auto each_grid = frame_grid_mp.begin(); each_grid != frame_grid_mp.end(); each_grid++) {
         que.push(each_grid);
     }
     std::mutex que_mutex;
     std::vector <std::shared_ptr<std::thread> > face_generate_ray_detect_thread_pool(thread_num);
     for(int i=0;i<thread_num;i++) {
-        face_generate_ray_detect_thread_pool[i] = make_shared<std::thread>([&](int now_id) {
+        face_generate_ray_detect_thread_pool[i] = std::make_shared<std::thread>([&](int now_id) {
             while(true) {
                 std::unique_lock<std::mutex> lock(que_mutex);
                 if (que.empty()) {
@@ -675,7 +680,7 @@ int main(int argc, char* argv[]) {
                        (int) frame_grid_mp.size() - que.size(), (int) frame_grid_mp.size());
 
                 lock.unlock();
-                unordered_map<unsigned long long, pair<int, int> > triangle_mapping;
+                std::unordered_map<unsigned long long, std::pair<int, int> > triangle_mapping;
                 std::list<K2::Triangle_3> l;
                 K2::Point_3 small = iGameVertex_to_Point_K2(getGridVertex(each_grid->first, 0));
                 K2::Point_3 big = iGameVertex_to_Point_K2(getGridVertex(each_grid->first, 7));
@@ -685,6 +690,9 @@ int main(int argc, char* argv[]) {
                 }
 
                 CGAL::Polyhedron_3<K2> frame_poly;
+                PMP::repair_polygon_soup(ps,each_grid_face_list,CGAL::parameters::all_default());
+                PMP::orient_polygon_soup(ps,each_grid_face_list);
+
                 PMP::polygon_soup_to_polygon_mesh(ps, each_grid_face_list, frame_poly, CGAL::parameters::all_default());
 
                 std::function<bool(K2::Point_3)> vertex_in_frame = [&](K2::Point_3 v) {
@@ -734,7 +742,7 @@ int main(int argc, char* argv[]) {
                     std::list<Tree::Intersection_and_primitive_id<K2::Ray_3>::Type> intersections;
                     aabb_tree.all_intersections(ray, std::back_inserter(intersections));
                     for (auto item: intersections) {
-                        pair<int, int> belong = triangle_mapping[item.second->id()];
+                        std::pair<int, int> belong = triangle_mapping[item.second->id()];
                         int which_field = belong.first;
                         int which_id = belong.second;
                         if (which_field == global_face_list[global_face_id].field_id)continue;
@@ -756,11 +764,11 @@ int main(int argc, char* argv[]) {
         face_generate_ray_detect_thread_pool[i]->join();
     //exit(0);
 
-    cout <<"start generate"<<endl;
+    std::cout <<"start generate"<<std::endl;
     std::vector <std::shared_ptr<std::thread> > global_face_final_generate_thread_pool(thread_num);
-    atomic<int> flag = 0;
+    std::atomic<int> flag(0);
     for(int i=0;i<thread_num;i++) {
-        global_face_final_generate_thread_pool[i] = make_shared<std::thread>([&](int now_id) {
+        global_face_final_generate_thread_pool[i] = std::make_shared<std::thread>([&](int now_id) {
             std::list<K2::Triangle_3>origin_face_list;
             for(int i=0;i<mesh->FaceSize();i++){
                 K2::Point_3 v0(mesh->fast_iGameVertex[mesh->fast_iGameFace[i].vh(0)].x(),
@@ -781,13 +789,13 @@ int main(int argc, char* argv[]) {
 
             for (int i = 0; i < global_face_list.size(); i++) {
                 if(i %(thread_num*1000) ==0)
-                    cout << "global_face_list:" << i <<"/"<<global_face_list.size()<< endl;
+                    std::cout << "global_face_list:" << i <<"/"<<global_face_list.size()<< std::endl;
                 if (i % thread_num != now_id)continue;
                 if(global_face_list[i].useful == false )continue;
-                for(std::unordered_map<int,vector<pair<K2::Point_3,int> > >::iterator it = global_face_list[i].ray_detect_map.begin();
+                for(std::unordered_map<int,std::vector<std::pair<K2::Point_3,int> > >::iterator it = global_face_list[i].ray_detect_map.begin();
                     it != global_face_list[i].ray_detect_map.end(); it++
                         ){////field 交点 对应的面
-                    unordered_set<int>se;
+                    std::unordered_set<int>se;
                     std::vector<K2::Point_3> intersection_v;
                     for(int j=0;j<it->second.size();j++){
                         if(se.count(it->second[j].second))continue;
@@ -851,12 +859,12 @@ int main(int argc, char* argv[]) {
 
     std::vector <std::shared_ptr<std::thread> > special_case_detect(thread_num);
     for(int i=0;i<thread_num;i++) {
-        special_case_detect[i] = make_shared<std::thread>([&](int now_id) {
+        special_case_detect[i] = std::make_shared<std::thread>([&](int now_id) {
             for (int i = 0; i < global_face_list.size(); i++) {
                 if (i % thread_num != now_id)continue;
                 bool inner_flag = true;
                 if(global_face_list[i].useful > 0 && !global_face_list[i].special_field_id.empty() )[[unlikely]]{
-                    cout <<"meeting rare case, do special method"<<std::endl;
+                    std::cout <<"meeting rare case, do special method"<<std::endl;
                     K2::Triangle_3 tri(global_vertex_list[global_face_list[i].idx0],
                                        global_vertex_list[global_face_list[i].idx1],
                                        global_vertex_list[global_face_list[i].idx2]);
@@ -885,7 +893,8 @@ int main(int argc, char* argv[]) {
     double sum_avg_edge = 0;
 
     for (int i = 0; i < global_face_list.size(); i++) {
-        cout <<i <<" "<< global_face_list[i].useful << endl;
+        if (i%1000==0)
+            std::cout << "Wrote to result: " << i <<"/"<< global_face_list.size() << std::endl;
         if(global_face_list[i].useful>0) {
             if(running_mode == 1) {
                 sum_avg_edge += sqrt(CGAL::to_double((CGAL::squared_distance(global_vertex_list[global_face_list[i].idx0] , global_vertex_list[global_face_list[i].idx1]))));
@@ -902,50 +911,17 @@ int main(int argc, char* argv[]) {
         }
     }
     fclose(file6);
-    sum_avg_edge /=(global_face_list.size()*3*20);
-
-    auto end_clock = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> diff = end_clock - start_clock;
-
-    string new_name = (input_filename + "_tmp.obj");
-    string cmd;
-    string tetwild_ex = "";
-    if(tetwild_l>0){
-        tetwild_ex += " -l "+to_string(tetwild_l) +" ";
-    }
-    if(tetwild_e>0){
-        tetwild_ex += " -e "+to_string(tetwild_e) +" ";
-    }
-    //exit(0);
-    if(result_mode == 1) {
-        tetwild_ex+= "   --manifold-surface     ";
-        cmd =
-                ("../fTetWild/build/FloatTetwild_bin -i" + (input_filename + "_tmp.obj"))+ tetwild_ex+
-                (" && mv " + new_name + "__sf.obj " + input_filename + "_final_result.obj");
-    }
-    else{
-        for(int i=0;i<4;i++)new_name.pop_back();
-        cmd = ("../TetWild/build/Tetwild " + (input_filename + "_tmp.obj") ) + tetwild_ex +
-              (" && mv "+new_name+"__sf.obj " + input_filename+"_final_result.obj" );
-
-    }
-
-    //system(("mv "+new_name+"__sf.obj " + input_filename+"_result.obj" ).c_str());
-    //Remeshing().run((input_filename + "_result.obj").c_str());
-    cout << cmd << endl;
-    system(cmd.c_str());
-    auto end2_clock = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> diff2 = end2_clock - end_clock;
-    std::cout << input_filename<< "\t" << diff.count() <<"\t"<<diff2.count()<<"\t";
-    auto mesh00 = make_shared<MeshKernel::SurfaceMesh>(ReadObjFile(input_filename + "_final_result.obj"));
-    cout <<"final result is saved in "<< input_filename + "_final_result.obj"<<endl;
-    cout << mesh00->VertexSize() <<"\t"<< mesh00->FaceSize() << "\t"<< mesh->VertexSize()<<"\t"<<mesh->FaceSize()<<endl;
-    stringstream time_use;
-    FILE *file_ans = fopen(  (input_filename + "_time.txt").c_str(), "w");
-    time_use  << input_filename<< "\t" << diff.count() <<"\t"<<diff2.count()<<"\t";
-    time_use << mesh00->VertexSize() <<"\t"<< mesh00->FaceSize() << "\t"<< mesh->VertexSize()<<"\t"<<mesh->FaceSize()<<endl;
-    fputs(time_use.str().c_str(),file_ans);
-    fclose(file_ans);
+    std::vector<K2::Point_3> points_ref;
+    std::vector<std::vector<std::size_t> > faces_ref;
+    std::ifstream in(input_filename + "_result.obj");
+    CGAL::IO::read_OBJ(in,points_ref,faces_ref);
+    CGAL::Polyhedron_3<K2> ms;
+    PMP::repair_polygon_soup(points_ref,faces_ref);
+    PMP::orient_polygon_soup(points_ref,faces_ref);
+    PMP::polygon_soup_to_polygon_mesh(points_ref, faces_ref, ms);
+    std::ofstream out(input_filename + "_result.stl",std::ios::binary);
+    CGAL::IO::set_binary_mode(out);
+    CGAL::IO::write_STL(out,ms);
     return 0;
 }
 // 1 2 3 4 5 6

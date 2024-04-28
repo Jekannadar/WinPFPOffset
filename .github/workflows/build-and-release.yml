@@ -1,0 +1,57 @@
+name: build-and-release
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: windows-latest-${{ github.workflow }}
+    runs-on: windows-latest
+    env:
+      VCPKG_DEFAULT_TRIPLET: x64-windows-static
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: lukka/get-cmake@latest
+
+      - name: Restore from cache and setup vcpkg executable and data files.
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgJsonGlob: 'vcpkg.json'
+
+      - name: Run CMake+vcpkg+Ninja+CTest to build packages and generate/build/test the code.
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: 'nmake-vcpkg'
+          buildPreset: 'nmake-release'
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: PFPOffset
+          path: ${{ github.workspace }}\builds\nmake-vcpkg\PFPOffset.exe
+
+  release:
+    permissions: write-all
+    name: Update Latest Release
+    needs: [build]
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@master
+        with:
+          name: PFPOffset
+          path: PFPOffset.exe
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: false
+          title: "Download Executable"
+          files: |
+            PFPOffset.exe
+            LICENSE

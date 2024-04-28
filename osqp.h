@@ -5,7 +5,7 @@
 #ifndef THICKEN2_OSQP_H
 #define THICKEN2_OSQP_H
 int running_mode = 2;
-MeshKernel::iGameVertex do_quadratic_error_metric_check(MeshKernel::iGameVertexHandle vh,vector<MeshKernel::iGameFaceHandle> neighbor_face_list,bool &is_succ,double& dist){
+MeshKernel::iGameVertex do_quadratic_error_metric_check(MeshKernel::iGameVertexHandle vh,std::vector<MeshKernel::iGameFaceHandle> neighbor_face_list,bool &is_succ,double& dist){
     MeshKernel::iGameVertex v = mesh->fast_iGameVertex[vh];
     int m = neighbor_face_list.size();
     Eigen::SparseMatrix<double> hessian(3, 3);     //P: n*n正定矩阵,必须为稀疏矩阵SparseMatrix

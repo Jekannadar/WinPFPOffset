@@ -81,22 +81,22 @@ inline bool is_same_triangle(K::Point_3 p0,K::Point_3 p1,K::Point_3 p2,K::Point_
     check+=( sqrt(CGAL::to_double(squared_distance(q1,p0))) < eps || sqrt(CGAL::to_double(squared_distance(q1,p1))) <eps || sqrt(CGAL::to_double(squared_distance(q1,p2)))<eps );
     check+=( sqrt(CGAL::to_double(squared_distance(q2,p0))) < eps || sqrt(CGAL::to_double(squared_distance(q2,p1))) <eps || sqrt(CGAL::to_double(squared_distance(q2,p2)))<eps );
     if(check)
-        cout << "check "<< check <<endl;
+        std::cout << "check "<< check <<std::endl;
     return check == 6;
 
 }
 
 
-CGAL::Epeck::FT triangle_squared_aspect_ratio(vector<K2::Point_2>v){
-    vector<CGAL::Epeck::FT> length;
+CGAL::Epeck::FT triangle_squared_aspect_ratio(std::vector<K2::Point_2>v){
+    std::vector<CGAL::Epeck::FT> length;
     for(int i=0;i<3;i++){
         length.push_back((v[i] - v[(i+1)%3]).squared_length());
     }
     return *max_element(length.begin(),length.end()) / *min_element(length.begin(),length.end());
 }
 
-double triangle_squared_aspect_ratio(vector<MeshKernel::iGameVertex > v){
-    vector<double> length;
+double triangle_squared_aspect_ratio(std::vector<MeshKernel::iGameVertex > v){
+    std::vector<double> length;
     for(int i=0;i<3;i++){
         length.push_back((v[i] - v[(i+1)%3]).norm2());
     }

@@ -5,7 +5,7 @@
 #ifndef THICKEN2_SORT_BY_POLAR_ORDER_H
 #define THICKEN2_SORT_BY_POLAR_ORDER_H
 
-void sort_by_polar_order(vector<K2::Point_3>& v,K2::Vector_3 orthogonal_direction){
+void sort_by_polar_order(std::vector<K2::Point_3>& v,K2::Vector_3 orthogonal_direction){
     K2::Vector_3 center_v(0,0,0);
     for(auto j: v){
         center_v += j - K2::Point_3 (0,0,0);
@@ -15,7 +15,7 @@ void sort_by_polar_order(vector<K2::Point_3>& v,K2::Vector_3 orthogonal_directio
         return ;
     K2::Point_3 center =  K2::Point_3 (0,0,0) + center_v;
 
-    function<int(CGAL::Epeck::FT,CGAL::Epeck::FT)> quadrant = [](CGAL::Epeck::FT x,CGAL::Epeck::FT y){
+    std::function<int(CGAL::Epeck::FT,CGAL::Epeck::FT)> quadrant = [](CGAL::Epeck::FT x,CGAL::Epeck::FT y){
         auto zero = CGAL::Epeck::FT(0);
         if(x>  zero && y > zero)return 1;
         else if(x<= zero && y >  zero)return 2;

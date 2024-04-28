@@ -35,6 +35,7 @@
 #include <vcg/complex/append.h>
 #include <vcg/complex/allocate.h>
 #include <wrap/io_trimesh/export.h>
+#include <numeric>
 
 namespace vcg {
 namespace tri {

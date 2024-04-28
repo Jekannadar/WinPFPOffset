@@ -31,15 +31,15 @@ DEFINE_double(E, -1,
 //DEFINE_double(e, 1e-4,
 //              "This arg is a double means the eps. When the distance of two points is smaller than eps, we will regard these two point as coinciding. ");
 int result_mode;
-string input_filename;
+std::string input_filename;
 double tetwild_l = -1;
 double tetwild_e = -1;
 void flag_parser() {
     result_mode = FLAGS_m;
-    cout << "result_mode is " << result_mode << endl;
+    std::cout << "result_mode is " << result_mode << std::endl;
     running_mode = FLAGS_i;
     if (running_mode != 1 && running_mode != 2) {
-        cout << "running_mode must equal to 1 or 2" << endl;
+        std::cout << "running_mode must equal to 1 or 2" << std::endl;
         exit(0);
     }
     min_distance_limit = FLAGS_s;

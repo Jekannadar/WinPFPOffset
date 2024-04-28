@@ -8,7 +8,7 @@
 bool in_single_coverage_field_ray_detect(int field_id,K2::Triangle_3& face){
     K2::Vector_3 ray_vec = face.supporting_plane().orthogonal_vector();
     K2::Point_3 center = centroid(face);
-    vector< K2::Triangle_3> field_face_list;
+    std::vector< K2::Triangle_3> field_face_list;
     for(int i=0;i< coverage_field_list[field_id].renumber_bound_face_global_id.size();i++){
         int global_face_id = coverage_field_list[field_id].renumber_bound_face_global_id[i];
         int tv0 = global_face_list[global_face_id].idx0;
@@ -25,7 +25,7 @@ bool in_single_coverage_field_ray_detect(int field_id,K2::Triangle_3& face){
         }
         K2::Ray_3 ray(center,ray_detect);
         bool flag = true;
-        vector<K2::Point_3> v;
+        std::vector<K2::Point_3> v;
         for(int j=0;j<field_face_list.size();j++){
             if(CGAL::squared_distance(field_face_list[j],center) > CGAL::Epeck::FT(0)){
                 CGAL::cpp11::result_of<K2::Intersect_3(K2::Ray_3 , K2::Triangle_3)>::type

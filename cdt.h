@@ -37,7 +37,7 @@ typedef CGAL::Constrained_Delaunay_triangulation_2<K2> CDT;
 
 
 
-vector<vector<K2::Point_3> > CGAL_CDT_NEW(vector<K2::Point_3> sorted_bound_vertex, vector<K2::Segment_3> cs,K2::Triangle_3 origin_face) {
+std::vector<std::vector<K2::Point_3> > CGAL_CDT_NEW(std::vector<K2::Point_3> sorted_bound_vertex, std::vector<K2::Segment_3> cs,K2::Triangle_3 origin_face) {
 
     //CGAL::make_conforming_Delaunay_2();
     // cout << sorted_bound_vertex.size() <<" "<< cs.size() << endl;
@@ -104,11 +104,11 @@ vector<vector<K2::Point_3> > CGAL_CDT_NEW(vector<K2::Point_3> sorted_bound_verte
                                      origin_face.vertex(2)-origin_face.vertex(0)
     );
 
-    vector<vector<K2::Point_3> > ret;
+    std::vector<std::vector<K2::Point_3> > ret;
     for (CDT::Finite_faces_iterator fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
         K2::Triangle_2 t = cdt.triangle(fit);
         if(bounded_polygon.has_on_bounded_side(CGAL::centroid(t))) {
-            vector<K2::Point_3>tmp(3);
+            std::vector<K2::Point_3>tmp(3);
             for(int j=0;j<3;j++){
                 tmp[j] = base_point_3d + t[j].x()*X_axis + t[j].y()*Y_axis;
             }

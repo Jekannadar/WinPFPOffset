@@ -58,7 +58,7 @@ namespace PMP = CGAL::Polygon_mesh_processing;
 
 
 
-using namespace std;
+//using namespace std;
 
 
 class CGALPolygon {
@@ -68,7 +68,7 @@ class CGALPolygon {
 public:
     CGALPolygon() {}
 
-    CGALPolygon(const shared_ptr <MeshKernel::SurfaceMesh> &mesh) {
+    CGALPolygon(const std::shared_ptr <MeshKernel::SurfaceMesh> &mesh) {
         std::vector<K2::Point_3> ps;
         std::vector<std::vector<std::size_t> > fs;
         for (int i = 0; i < mesh->VertexSize(); i++) {
@@ -106,6 +106,6 @@ public:
 };
 
 
-shared_ptr<CGALPolygon>cgal_polygon;
+std::shared_ptr<CGALPolygon>cgal_polygon;
 
 #endif //THICKEN2_CGALPOLYGON_H

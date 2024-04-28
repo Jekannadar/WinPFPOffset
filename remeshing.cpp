@@ -13,7 +13,7 @@
 #include<vcg/complex/algorithms/isotropic_remeshing.h>
 
 using namespace vcg;
-using namespace std;
+//using namespace std;
 
 class MyEdge;
 
@@ -37,10 +37,10 @@ class MyFace
 class MyEdge : public Edge<MyUsedTypes> {
 };
 
-class MyMesh : public tri::TriMesh<vector<MyVertex>, vector<MyFace>, vector<MyEdge> > {
+class MyMesh : public tri::TriMesh<std::vector<MyVertex>, std::vector<MyFace>, std::vector<MyEdge> > {
 };
 
-void Remeshing::run(string file_name) {
+void Remeshing::run(std::string file_name) {
     MyMesh original, toremesh;
 
     int loadmask;
@@ -102,7 +102,7 @@ void Remeshing::run(string file_name) {
 
     printf(" Input mesh %8i v %8i f\n", toremesh.VN(), toremesh.FN());
     vcg::tri::IsotropicRemeshing<MyMesh>::Do(toremesh, original, params);
-    cout << "remeshing result " << (file_name).c_str() << endl;
+    std::cout << "remeshing result " << (file_name).c_str() << std::endl;
     //vcg::tri::io::ExporterOBJ<MyMesh>::Save(toremesh, (file_name).c_str(),loadmask);
     vcg::tri::io::ExporterOBJ<MyMesh>::Save(toremesh, (file_name+"_remeshing.obj").c_str(), loadmask);
     printf("Output mesh %8i v %8i f\n", toremesh.VN(), toremesh.FN());
